@@ -1,0 +1,1375 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Afaq Trust System - نظام آفاق ترست الشامل المطور</title>
+    <style>
+        :root {
+            --brand-green: #005f60;
+            --brand-green-dark: #003e3f;
+            --brand-gold: #c29b38;
+            --brand-gold-light: #dfb858;
+            --bg-light: #f4f6f8;
+            --text-dark: #1d2327;
+            --border-color: #dcdfe3;
+            --success-green: #2e7d32;
+            --danger-red: #c62828;
+            --info-blue: #0288d1;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
+        body { background-color: var(--bg-light); color: var(--text-dark); display: flex; min-height: 100vh; flex-direction: row; }
+        
+        /* الاستجابة للجوال */
+        @media (max-width: 768px) {
+            body { flex-direction: column; }
+            .wp-sidebar { width: 100% !important; min-height: auto !important; }
+            .wp-main { padding: 15px !important; }
+            .row-grid { grid-template-columns: 1fr !important; }
+        }
+
+        /* الشريط الجانبي */
+        .wp-sidebar { width: 260px; background: var(--brand-green-dark); color: #fff; min-height: 100vh; font-size: 14px; display: flex; flex-direction: column; flex-shrink: 0; }
+        .wp-brand-header { padding: 20px 10px; background: #00292a; text-align: center; border-bottom: 2px solid var(--brand-gold); display: flex; flex-direction: column; align-items: center; gap: 8px; }
+        .wp-brand-header img { width: 70px; height: 70px; border-radius: 50%; border: 2px solid var(--brand-gold); object-fit: cover; background: #fff; }
+        .wp-brand-title { color: var(--brand-gold); font-size: 16px; font-weight: bold; }
+        
+        .wp-menu-item { padding: 14px 18px; color: #e0f2f1; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; gap: 10px; font-size: 13px; transition: all 0.2s; }
+        .wp-menu-item:hover, .wp-menu-item.active { background: var(--brand-green); color: var(--brand-gold-light); font-weight: bold; border-right: 4px solid var(--brand-gold); }
+        
+        /* المحتوى الرئيسي */
+        .wp-main { flex: 1; padding: 25px 35px; overflow-y: auto; }
+        .wp-header-bar { background: #fff; padding: 15px 25px; margin-bottom: 15px; border: 1px solid var(--border-color); border-top: 4px solid var(--brand-green); border-radius: 6px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.03); flex-wrap: wrap; gap: 10px; }
+        .header-title { font-size: 18px; color: var(--brand-green); font-weight: bold; display: flex; align-items: center; gap: 10px; }
+        
+        /* كروت الإحصائيات */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .stat-card { background: #fff; padding: 15px; border-radius: 6px; border: 1px solid var(--border-color); border-top: 4px solid var(--brand-green); box-shadow: 0 2px 4px rgba(0,0,0,0.02); text-align: center; }
+        .stat-card .num { font-size: 26px; font-weight: bold; color: var(--brand-green); margin-top: 5px; }
+        .stat-card .label { font-size: 12px; color: #666; font-weight: bold; }
+        
+        .stat-card.running { border-top-color: var(--info-blue); }
+        .stat-card.running .num { color: var(--info-blue); }
+        .stat-card.closed { border-top-color: var(--danger-red); }
+        .stat-card.closed .num { color: var(--danger-red); }
+        .stat-card.notstarted { border-top-color: var(--brand-gold); }
+        .stat-card.notstarted .num { color: var(--brand-gold); }
+
+        /* شريط الإشعارات */
+        .notification-bar { background: #e8f5e9; border: 1px solid #a5d6a7; border-right: 5px solid var(--success-green); padding: 12px 18px; margin-bottom: 20px; border-radius: 4px; font-size: 14px; color: #1b5e20; display: flex; justify-content: space-between; align-items: center; }
+
+        /* الكروت والواجهات */
+        .wp-card { background: #fff; border: 1px solid var(--border-color); box-shadow: 0 2px 6px rgba(0,0,0,0.02); padding: 22px; margin-bottom: 25px; border-radius: 6px; }
+        .wp-card h2 { font-size: 17px; font-weight: bold; margin-bottom: 18px; color: var(--brand-green); border-bottom: 2px solid var(--brand-gold-light); padding-bottom: 8px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        
+        /* الجداول */
+        .table-responsive { width: 100%; overflow-x: auto; }
+        .wp-list-table { width: 100%; border-collapse: collapse; margin-top: 10px; background: #fff; border-radius: 6px; overflow: hidden; border: 1px solid var(--border-color); min-width: 600px; }
+        .wp-list-table th { background: var(--brand-green); color: #fff; font-weight: 600; padding: 12px; text-align: right; font-size: 13px; border-bottom: 3px solid var(--brand-gold); }
+        .wp-list-table td { padding: 12px; border-bottom: 1px solid var(--border-color); font-size: 13px; color: #333; vertical-align: middle; }
+        .wp-list-table tr:nth-child(even) { background-color: #f9fbfb; }
+        
+        /* النماذج */
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-weight: bold; margin-bottom: 6px; font-size: 13px; color: var(--brand-green-dark); }
+        .form-control, select, textarea { width: 100%; padding: 10px 12px; border: 1px solid #b2dfdb; border-radius: 4px; font-size: 13px; background: #fff; }
+        .form-control:focus, select:focus, textarea:focus { border-color: var(--brand-green); outline: none; box-shadow: 0 0 0 2px rgba(0, 95, 96, 0.15); }
+        
+        .row-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+        
+        /* الأزرار */
+        .button-primary { background: var(--brand-green); border: 1px solid var(--brand-green-dark); color: #fff; padding: 9px 18px; font-size: 13px; font-weight: bold; border-radius: 4px; cursor: pointer; }
+        .button-primary:hover { background: var(--brand-green-dark); }
+        .button-secondary { background: #fff; border: 1px solid var(--brand-gold); color: var(--brand-green); padding: 6px 12px; font-size: 12px; font-weight: bold; border-radius: 4px; cursor: pointer; margin-bottom: 3px; }
+        .button-share { background: var(--brand-gold); border: 1px solid var(--brand-gold-light); color: #fff; padding: 6px 14px; font-size: 12px; font-weight: bold; border-radius: 4px; cursor: pointer; }
+        .button-danger { background: var(--danger-red); border: 1px solid #9a0007; color: #fff; padding: 6px 12px; font-size: 12px; font-weight: bold; border-radius: 4px; cursor: pointer; }
+        .drive-btn { background: #4285F4; color: #fff; padding: 4px 8px; border-radius: 4px; text-decoration: none; font-size: 11px; font-weight: bold; display: inline-flex; align-items: center; gap: 4px; }
+        
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; display: inline-block; margin: 2px; }
+        .badge-green { background: #e8f5e9; color: var(--success-green); border: 1px solid #c8e6c9; }
+        .badge-blue { background: #e1f5fe; color: var(--info-blue); border: 1px solid #b3e5fc; }
+        .badge-gold { background: #fff8e1; color: var(--brand-gold); border: 1px solid #ffe082; }
+        .badge-red { background: #ffebee; color: var(--danger-red); border: 1px solid #ffcdd2; }
+
+        /* شاشة تسجيل الدخول */
+        .login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--brand-green-dark); display: flex; justify-content: center; align-items: center; z-index: 9999; padding: 15px; }
+        .login-box { background: #fff; border-top: 5px solid var(--brand-gold); padding: 35px 30px; width: 100%; max-width: 380px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); border-radius: 8px; text-align: center; }
+        .login-box img { width: 90px; height: 90px; margin-bottom: 12px; border-radius: 50%; border: 2px solid var(--brand-gold); object-fit: cover; }
+
+        .checklist-box { background: #fdfbf7; border: 1px solid var(--brand-gold-light); padding: 12px; border-radius: 4px; margin-top: 10px; max-height: 300px; overflow-y: auto; }
+        .checklist-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; border-bottom: 1px solid #eee; font-size: 13px; }
+        .checklist-item:last-child { border-bottom: none; }
+        .radio-group { display: flex; gap: 15px; }
+        .radio-group label { display: flex; align-items: center; gap: 4px; cursor: pointer; font-size: 12px; }
+
+        .hidden { display: none !important; }
+        .user-tab-btn { margin-left: 5px; margin-bottom: 8px; }
+    </style>
+</head>
+<body>
+
+    <!-- شاشة تسجيل الدخول -->
+    <div id="loginPage" class="login-overlay">
+        <div class="login-box">
+            <img id="loginLogo" src="" alt="Afaq Trust Logo">
+            <h2 style="color: var(--brand-green); font-size: 20px; margin-bottom: 2px;">مؤسسة آفاق ترست</h2>
+            <p style="color: #666; font-size: 12px; margin-bottom: 20px;">AFAQ TRUST SYSTEM</p>
+            <div id="loginError" style="color: var(--danger-red); font-size: 12px; margin-bottom: 12px; display: none;">اسم المستخدم أو كلمة المرور غير صحيحة!</div>
+            <div class="form-group" style="text-align: right;">
+                <label for="loginUser">اسم المستخدم</label>
+                <input type="text" id="loginUser" class="form-control">
+            </div>
+            <div class="form-group" style="text-align: right;">
+                <label for="loginPass">كلمة المرور</label>
+                <input type="password" id="loginPass" class="form-control">
+            </div>
+            <button class="button-primary" style="width: 100%; margin-top: 10px;" onclick="handleLogin()">تسجيل الدخول</button>
+        </div>
+    </div>
+
+    <!-- الشريط الجانبي -->
+    <aside class="wp-sidebar">
+        <div class="wp-brand-header">
+            <img id="sidebarLogo" src="" alt="Logo">
+            <div class="wp-brand-title">AFAQ TRUST</div>
+        </div>
+        <div class="wp-menu-item active" onclick="switchTab('meetings-tab', this)">🤝 تقرير الاجتماع الأسبوعي</div>
+        <div class="wp-menu-item" onclick="switchTab('projects-tab', this)">📁 المشاريع الجارية</div>
+        <div class="wp-menu-item" onclick="switchTab('closed-projects-tab', this)">🔒 المشاريع المغلقة</div>
+        <div class="wp-menu-item" onclick="switchTab('equipment-tab', this)">📦 جدول التجهيزات</div>
+        <div class="wp-menu-item" onclick="switchTab('tasks-tab', this)">📋 جدول الأعمال والتقرير الميداني</div>
+        <div class="wp-menu-item" onclick="switchTab('users-tab', this)">👥 إدارة الحسابات والمستخدمين</div>
+    </aside>
+
+    <main class="wp-main">
+        <header class="wp-header-bar">
+            <div class="header-title">
+                <span>نظام إدارة مؤسسة آفاق ترست</span>
+                <span style="font-size: 13px; color: var(--brand-gold); background: var(--brand-green-dark); padding: 4px 12px; border-radius: 12px;" id="currentUserName"></span>
+            </div>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <button class="button-share" onclick="generateShareableLink()">🔗 مشاركة رابط النظام</button>
+                <button class="button-secondary" onclick="logout()">🔓 خروج</button>
+            </div>
+        </header>
+
+        <!-- لوحة ملخص المشاريع -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="label">إجمالي المشاريع المتاحة</div>
+                <div class="num" id="stat_total">0</div>
+            </div>
+            <div class="stat-card running">
+                <div class="label">مشاريع قيد التنفيذ</div>
+                <div class="num" id="stat_running">0</div>
+            </div>
+            <div class="stat-card notstarted">
+                <div class="label">مشاريع لم تبدأ</div>
+                <div class="num" id="stat_notstarted">0</div>
+            </div>
+            <div class="stat-card closed">
+                <div class="label">مشاريع مغلقة ومكتملة</div>
+                <div class="num" id="stat_closed">0</div>
+            </div>
+        </div>
+
+        <!-- شريط الإشعارات العام -->
+        <div id="notificationBar" class="notification-bar hidden">
+            <span id="notificationText">🔔 لا توجد إشعارات جديدة</span>
+            <button onclick="dismissNotification()" style="background:none; border:none; cursor:pointer; font-weight:bold;">✕</button>
+        </div>
+
+        <!-- 1. محضر وتقارير الاجتماع الأسبوعي -->
+        <section id="meetings-tab" class="tab-content">
+            <div class="wp-card admin-only">
+                <h2>🤝 إعداد تقرير الاجتماع الأسبوعي الرسمي والتكليفات</h2>
+                <form onsubmit="saveMeeting(event)">
+                    <div class="row-grid">
+                        <div class="form-group">
+                            <label for="m_day_name">يوم الاجتماع</label>
+                            <select id="m_day_name" class="form-control" required>
+                                <option value="السبت">السبت</option>
+                                <option value="الأحد">الأحد</option>
+                                <option value="الإثنين">الإثنين</option>
+                                <option value="الثلاثاء">الثلاثاء</option>
+                                <option value="الأربعاء">الأربعاء</option>
+                                <option value="الخميس" selected>الخميس</option>
+                                <option value="الجمعة">الجمعة</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="m_meeting_date">تاريخ الاجتماع</label>
+                            <input type="date" id="m_meeting_date" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <!-- فترة الإنجازات السابقة -->
+                    <div class="row-grid" style="background: #f0f7f7; padding: 12px; border-radius: 6px; margin-bottom: 15px;">
+                        <div class="form-group" style="margin:0;">
+                            <label for="m_prev_from">فترة الإنجازات (من تاريخ):</label>
+                            <input type="date" id="m_prev_from" class="form-control" onchange="autoFetchPreviousAchievements()" required>
+                        </div>
+                        <div class="form-group" style="margin:0;">
+                            <label for="m_prev_to">فترة الإنجازات (إلى تاريخ):</label>
+                            <input type="date" id="m_prev_to" class="form-control" onchange="autoFetchPreviousAchievements()" required>
+                        </div>
+                    </div>
+
+                    <!-- عرض الإنجازات السابقة بجدول منسق -->
+                    <div class="form-group">
+                        <label>أولاً: إنجازات الأسبوع السابق (تُجلب تلقائياً بناءً على الفترة المحددة أعلاه):</label>
+                        <div class="table-responsive">
+                            <table class="wp-list-table" id="meetingAchievementsTable">
+                                <thead>
+                                    <tr>
+                                        <th>الشخص المسؤول</th>
+                                        <th>اليوم والتاريخ</th>
+                                        <th>المهمة والتكليف</th>
+                                        <th>الإنجاز الميداني الموثق</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td colspan="4" style="text-align: center; color: #888;">حدد فترة التواريخ أعلاه لجلب الإنجازات تلقائياً...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- جدول خطة ومهام الأسبوع القادم الديناميكي -->
+                    <div style="background: #fcf8f2; border: 1px solid var(--brand-gold); padding: 15px; border-radius: 6px; margin-bottom: 15px;">
+                        <h3 style="font-size: 14px; color: var(--brand-green); margin-bottom: 10px;">ثانياً: خطة ومهام الأسبوع القادم (جدول التكليفات التلقائي)</h3>
+                        <p style="font-size: 12px; color: #666; margin-bottom: 10px;">⚡ عند حفظ الاجتماع، ستُرحل هذه المهام تلقائياً إلى جدول الأعمال لكل عضو بكامل التفاصيل!</p>
+                        
+                        <div class="table-responsive">
+                            <table class="wp-list-table" id="meetingTasksTable">
+                                <thead>
+                                    <tr>
+                                        <th>الشخص المسؤول</th>
+                                        <th>اليوم</th>
+                                        <th>التاريخ</th>
+                                        <th>المهمة والتكليف المطلوب</th>
+                                        <th>إجراء</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="meetingTasksTbody"></tbody>
+                            </table>
+                        </div>
+                        <button type="button" class="button-secondary" onclick="addMeetingTaskRow()" style="margin-top: 10px;">➕ إضافة مهمة جديدة للخطة</button>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="m_targets">ثالثاً: المشاريع والأعمال المستهدفة</label>
+                        <textarea id="m_targets" rows="3" class="form-control" placeholder="1. متابعة التنفيذ...&#10;2. مشاريع الدعوة والتعليم..."></textarea>
+                    </div>
+
+                    <div class="row-grid">
+                        <div class="form-group">
+                            <label for="m_guidelines">رابعاً: التوجيهات والمتابعة</label>
+                            <textarea id="m_guidelines" rows="3" class="form-control">• الالتزام بتسجيل ورفع الإنجازات اليومية فور إتمامها.&#10;• رفع كافة الصور والفيديوهات على Google Drive.</textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="m_drive_link">رابط Google Drive للتقرير/الاجتماع</label>
+                            <input type="url" id="m_drive_link" class="form-control" placeholder="https://drive.google.com/...">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="button-primary" style="margin-top: 15px; width: 100%;">💾 حفظ تقرير الاجتماع وترحيل المهام تلقائياً</button>
+                </form>
+            </div>
+
+            <div class="wp-card">
+                <h2>📜 أرشيف تقارير الاجتماعات الأسبوعية</h2>
+                <div class="table-responsive">
+                    <table class="wp-list-table" id="meetingsTable">
+                        <thead>
+                            <tr>
+                                <th>تاريخ الاجتماع</th>
+                                <th>فترة الإنجازات</th>
+                                <th>رابط Google Drive</th>
+                                <th>إجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. قسم المشاريع الجارية والتقارير -->
+        <section id="projects-tab" class="tab-content hidden">
+            <div class="wp-card admin-only">
+                <h2>➕ إضافة / تحديث تقرير مشروع ميداني</h2>
+                <form onsubmit="saveOrUpdateProject(event)">
+                    <div class="row-grid">
+                        <div class="form-group">
+                            <label for="p_code">كود المشروع</label>
+                            <input type="text" id="p_code" class="form-control" required placeholder="PRJ-2026-01">
+                        </div>
+                        <div class="form-group">
+                            <label for="p_name">اسم المشروع</label>
+                            <input type="text" id="p_name" class="form-control" required placeholder="مثال: بناء مركز تعليمي / حفر بئر">
+                        </div>
+                        <div class="form-group">
+                            <label for="p_date">التاريخ</label>
+                            <input type="date" id="p_date" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <div class="row-grid">
+                        <div class="form-group">
+                            <label for="p_type_select">نوع المشروع</label>
+                            <select id="p_type_select" class="form-control" onchange="handleProjectTypeChange(this.value)">
+                                <option value="مشاريع الدعوة والتعليم">📖 مشاريع الدعوة والتعليم</option>
+                                <option value="المشاريع الإنشائية">🏗️ المشاريع الإنشائية</option>
+                                <option value="مشاريع الآبار">💧 مشاريع الآبار</option>
+                                <option value="مشاريع المساجد والمدارس والمراكز">🕌 مشاريع المساجد والمدارس والمراكز</option>
+                                <option value="بيوت الأيتام والمشاريع الاجتماعية">🏠 بيوت الأيتام والمشاريع الاجتماعية</option>
+                                <option value="المشاريع الإغاثية">📦 المشاريع الإغاثية</option>
+                                <option value="مشروع الأضاحي والذبائح">🐑 مشروع الأضاحي والذبائح</option>
+                                <option value="مشروع توزيع الملابس">👕 مشروع توزيع الملابس</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="p_location">الموقع / المنطقة</label>
+                            <input type="text" id="p_location" class="form-control" required placeholder="المحافظة / المديرية">
+                        </div>
+                        <div class="form-group">
+                            <label for="p_assignee">المسؤول الميداني المخصص للمشروع</label>
+                            <select id="p_assignee" class="form-control"></select>
+                        </div>
+                    </div>
+
+                    <div class="row-grid">
+                        <div class="form-group">
+                            <label for="p_status">حالة المشروع التشغيلية</label>
+                            <select id="p_status" class="form-control">
+                                <option value="لم يبدأ">🟡 لم يبدأ</option>
+                                <option value="قيد التنفيذ" selected>🔵 قيد التنفيذ</option>
+                                <option value="مكتمل">🟢 مكتمل</option>
+                                <option value="تم إغلاقه ونقله للمشاريع المغلقة">🔴 تم إغلاقه ونقله للمشاريع المغلقة</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="p_drive_link">رابط Google Drive للتوثيق</label>
+                            <input type="url" id="p_drive_link" class="form-control" placeholder="https://drive.google.com/...">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>📋 مراحل تنفيذ وتوثيق المشروع (حدد حالة كل مرحلة):</label>
+                        <div id="projectStepsBox" class="checklist-box"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="p_text">التحديثات والتفاصيل الميدانية</label>
+                        <textarea id="p_text" rows="3" class="form-control" placeholder="سجل التحديثات الميدانية الأخيرة..."></textarea>
+                    </div>
+
+                    <button type="submit" class="button-primary">💾 حفظ / تحديث بيانات المشروع</button>
+                </form>
+            </div>
+
+            <div class="wp-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--brand-gold-light); padding-bottom: 8px; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                    <h2 style="border:none; margin:0; padding:0;">📁 سجل المشاريع الجارية (تظهر المسندة إليك فقط)</h2>
+                    <button class="button-share" onclick="printAllProjectsSummary('active')">🖨️ طباعة ملخص المشاريع</button>
+                </div>
+                <div class="table-responsive">
+                    <table class="wp-list-table" id="projectsTable">
+                        <thead>
+                            <tr>
+                                <th>الكود</th>
+                                <th>اسم المشروع والنوع</th>
+                                <th>الحالة</th>
+                                <th>الموقع والمسؤول</th>
+                                <th>Google Drive</th>
+                                <th>حالة مراحل التنفيذ</th>
+                                <th>التحديثات الميدانية</th>
+                                <th class="admin-only">تغيير الحالة</th>
+                                <th>إجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. قسم المشاريع المغلقة -->
+        <section id="closed-projects-tab" class="tab-content hidden">
+            <div class="wp-card">
+                <h2>🔒 أرشيف المشاريع المغلقة والمكتملة</h2>
+                <div class="table-responsive">
+                    <table class="wp-list-table" id="closedProjectsTable">
+                        <thead>
+                            <tr>
+                                <th>الكود</th>
+                                <th>المشروع والنوع</th>
+                                <th>الموقع</th>
+                                <th>المسؤول</th>
+                                <th>Drive</th>
+                                <th>التحديثات النهائية</th>
+                                <th>إجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. جدول التجهيزات -->
+        <section id="equipment-tab" class="tab-content hidden">
+            <div class="wp-card admin-only">
+                <h2>📦 إضافة طلب تجهيزات للمشروع</h2>
+                <form onsubmit="addEquipment(event)">
+                    <div class="row-grid">
+                        <div class="form-group">
+                            <label for="eq_project">المشروع المرتبط</label>
+                            <select id="eq_project" class="form-control"></select>
+                        </div>
+                        <div class="form-group">
+                            <label for="eq_item">اسم المادة / التجهيز</label>
+                            <input type="text" id="eq_item" class="form-control" required placeholder="مضخة / خزان / كتب دراسية">
+                        </div>
+                        <div class="form-group">
+                            <label for="eq_qty">الكمية</label>
+                            <input type="text" id="eq_qty" class="form-control" required placeholder="مثال: 50 حقيبة / 2 وحدة">
+                        </div>
+                        <div class="form-group">
+                            <label for="eq_assignee">المسؤول عن التجهيز</label>
+                            <select id="eq_assignee" class="form-control"></select>
+                        </div>
+                    </div>
+                    <button type="submit" class="button-primary">➕ إدراج بجدول التجهيزات</button>
+                </form>
+            </div>
+
+            <div class="wp-card">
+                <h2>📦 جدول التجهيزات والمواد للمشاريع</h2>
+                <div class="table-responsive">
+                    <table class="wp-list-table" id="equipmentTable">
+                        <thead>
+                            <tr>
+                                <th>المشروع</th>
+                                <th>المادة / التجهيز</th>
+                                <th>الكمية</th>
+                                <th>المسؤول</th>
+                                <th>حالة التجهيز</th>
+                                <th class="admin-only">إجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. قسم جدول الأعمال اليومي والتقرير الميداني -->
+        <section id="tasks-tab" class="tab-content hidden">
+            <div class="wp-card admin-only">
+                <h2>📋 إسناد مهمة جديدة مباشرة لموظف</h2>
+                <form onsubmit="addTaskDirect(event)">
+                    <div class="row-grid">
+                        <div class="form-group">
+                            <label for="t_assignee">الموظف المسؤول</label>
+                            <select id="t_assignee" class="form-control"></select>
+                        </div>
+                        <div class="form-group">
+                            <label for="t_day">اليوم</label>
+                            <select id="t_day" class="form-control" required>
+                                <option value="السبت">السبت</option>
+                                <option value="الأحد">الأحد</option>
+                                <option value="الإثنين">الإثنين</option>
+                                <option value="الثلاثاء">الثلاثاء</option>
+                                <option value="الأربعاء">الأربعاء</option>
+                                <option value="الخميس">الخميس</option>
+                                <option value="الجمعة">الجمعة</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="t_date">التاريخ</label>
+                            <input type="date" id="t_date" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="t_desc">تفاصيل المهمة والتكليف المطلوب</label>
+                        <input type="text" id="t_desc" class="form-control" required placeholder="أدخل تفاصيل المهمة...">
+                    </div>
+                    <button type="submit" class="button-primary">📤 إسناد المهمة للموظف</button>
+                </form>
+            </div>
+
+            <div class="wp-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--brand-gold-light); padding-bottom: 8px; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                    <h2 style="border:none; margin:0; padding:0;" id="taskSectionTitle">📊 جدول الأعمال والمهام المخصصة</h2>
+                    <div>
+                        <button class="button-primary" onclick="submitTasksToAdmin()" style="margin-left:5px;">📤 رفع التحديثات للمدير</button>
+                        <button class="button-share" onclick="printUserTasks()">🖨️ طباعة جدول الأعمال</button>
+                    </div>
+                </div>
+
+                <div class="admin-only" style="margin-bottom: 15px;">
+                    <span style="font-weight: bold; font-size: 13px; margin-left: 10px;">عرض حسب الموظف (للمدير):</span>
+                    <div id="userFilterButtons" style="display: inline-block;"></div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="wp-list-table" id="tasksTable">
+                        <thead>
+                            <tr>
+                                <th>الموظف المسؤول (الاسم الكامل)</th>
+                                <th>اليوم والتاريخ</th>
+                                <th>المهمة والتكليف المطلوب</th>
+                                <th>الإنجازات والتحديثات الميدانية</th>
+                                <th>سبب عدم التنفيذ (إن وجد)</th>
+                                <th class="admin-only">إجراء</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- 6. قسم إدارة الحسابات والمستخدمين -->
+        <section id="users-tab" class="tab-content hidden">
+            <!-- تغيير كلمة السر للأن الحساب الحالي -->
+            <div class="wp-card">
+                <h2>🔐 تغيير كلمة المرور للحساب الحالي</h2>
+                <form onsubmit="changeMyPassword(event)">
+                    <div class="row-grid">
+                        <div class="form-group">
+                            <label for="pass_current">كلمة المرور الحالية</label>
+                            <input type="password" id="pass_current" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="pass_new">كلمة المرور الجديدة</label>
+                            <input type="password" id="pass_new" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="pass_confirm">تأكيد كلمة المرور الجديدة</label>
+                            <input type="password" id="pass_confirm" class="form-control" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="button-primary">🔑 تحديث كلمة المرور</button>
+                </form>
+            </div>
+
+            <div class="wp-card admin-only">
+                <h2>👥 إضافة مستخدم جديد للنظام</h2>
+                <form onsubmit="addUser(event)">
+                    <div class="row-grid">
+                        <div class="form-group">
+                            <label for="u_fullName">الاسم الثلاثي للشخص (يظهر بالتقارير)</label>
+                            <input type="text" id="u_fullName" class="form-control" required placeholder="مثال: د. محمد عبدالوهاب احمد">
+                        </div>
+                        <div class="form-group">
+                            <label for="u_username">اسم المستخدم (للدخول فقط)</label>
+                            <input type="text" id="u_username" class="form-control" required placeholder="user2026">
+                        </div>
+                        <div class="form-group">
+                            <label for="u_password">كلمة المرور الأولى</label>
+                            <input type="password" id="u_password" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="u_role">صلاحيات الحساب</label>
+                            <select id="u_role" class="form-control">
+                                <option value="user">مستخدم / مسؤول ميداني (صلاحيات محدودة)</option>
+                                <option value="admin">مدير النظام (Admin - صلاحيات كاملة)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" class="button-primary">➕ إنشاء الحساب</button>
+                </form>
+            </div>
+
+            <div class="wp-card admin-only">
+                <h2>👥 جميع مستخدمي نظام آفاق ترست</h2>
+                <div class="table-responsive">
+                    <table class="wp-list-table" id="usersTable">
+                        <thead>
+                            <tr>
+                                <th>الاسم الثلاثي الكامل</th>
+                                <th>اسم المستخدم (للدخول)</th>
+                                <th>الصلاحية</th>
+                                <th>الحالة</th>
+                                <th>إجراءات الإدارة</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // صورة الشعار الرسمية المرفقة بترميز Base64 لعرضها بكفاءة وثبات في الطباعة والتطبيق
+        const logoDataUrl = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDABALDA4MChAODQ4SERATGCgaGBYWGdeJhnA33e......"; // صورة شعار مؤسسة آفاق ترست المرفقة
+        
+        const projectStepsPresets = {
+            "مشاريع الدعوة والتعليم": ["تحديد القرية / المركز", "حصر عدد الطلاب والمسلمين", "توفير المدرسين / الدعاة", "توفير المصاحف والمناهج", "متابعة الحلقات والدروس", "رفع تقرير الأنشطة", "Google Drive"],
+            "المشاريع الإنشائية": ["اختيار الموقع", "اعتماد الموقع", "كود المشروع", "البنر", "اختيار المقاول", "تسليم الموقع", "بدء التنفيذ", "التقارير الدورية", "الاستلام", "الافتتاح", "Google Drive"],
+            "مشاريع الآبار": ["اختيار الموقع", "تحديد البئر", "الحفر", "تركيب المواسير", "بناء البئر", "البرج والخزان", "المضخة والطاقة الشمسية", "التأكد من التشغيل", "الافتتاح", "Google Drive"],
+            "مشاريع المساجد والمدارس والمراكز": ["اختيار الموقع", "الاستكشاف والتحقق", "تعبئة النموذج", "اعتماد الموقع", "البنر", "التنفيذ", "التقارير", "الافتتاح", "Google Drive"],
+            "بيوت الأيتام والمشاريع الاجتماعية": ["تحديد المستفيدين", "تجهيز الموقع", "الأثاث والتجهيزات", "التشغيل", "Google Drive"],
+            "المشاريع الإغاثية": ["تحديد المستفيدين", "شراء المواد", "التوزيع", "إثبات الاستلام", "Google Drive"],
+            "مشروع الأضاحي والذبائح": ["شراء المواشي", "التوثيق بالمزرعة", "الذبح والتقطيع", "التوزيع", "Google Drive"],
+            "مشروع توزيع الملابس": ["حصر المستفيدين", "شراء الملابس", "التوزيع", "Google Drive"]
+        };
+
+        function loadInitialData() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const encodedData = urlParams.get('data');
+            if (encodedData) {
+                try {
+                    return JSON.parse(decodeURIComponent(escape(atob(encodedData))));
+                } catch(e) { console.error(e); }
+            }
+
+            return {
+                users: JSON.parse(localStorage.getItem('afaq_u')) || [
+                    {username: 'admin', password: '123', role: 'admin', fullName: 'المدير التنفيذي العام'},
+                    {username: 'hassan', password: '123', role: 'user', fullName: 'الشيخ حسن أحمد علي'},
+                    {username: 'husam', password: '123', role: 'user', fullName: 'الشيخ حسام محمد محمود'},
+                    {username: 'idris', password: '123', role: 'user', fullName: 'الشيخ إدريس سعيد باوزير'},
+                    {username: 'ahmed', password: '123', role: 'user', fullName: 'الأستاذ أحمد محمد عبدالوهاب'}
+                ],
+                projects: JSON.parse(localStorage.getItem('afaq_p')) || [],
+                equipment: JSON.parse(localStorage.getItem('afaq_eq')) || [],
+                tasks: JSON.parse(localStorage.getItem('afaq_t')) || [],
+                meetings: JSON.parse(localStorage.getItem('afaq_m')) || []
+            };
+        }
+
+        let db = loadInitialData();
+        let currentUser = null;
+        let activeTaskUserFilter = 'ALL';
+
+        function saveData() {
+            localStorage.setItem('afaq_u', JSON.stringify(db.users));
+            localStorage.setItem('afaq_p', JSON.stringify(db.projects));
+            localStorage.setItem('afaq_eq', JSON.stringify(db.equipment));
+            localStorage.setItem('afaq_t', JSON.stringify(db.tasks));
+            localStorage.setItem('afaq_m', JSON.stringify(db.meetings));
+            updateDashboardStats();
+        }
+
+        function updateDashboardStats() {
+            let userProjs = db.projects;
+            if(currentUser && currentUser.role !== 'admin') {
+                userProjs = db.projects.filter(p => p.assignee === currentUser.username || p.assigneeFullName === currentUser.fullName);
+            }
+            const total = userProjs.length;
+            const running = userProjs.filter(p => p.status === 'قيد التنفيذ').length;
+            const notstarted = userProjs.filter(p => p.status === 'لم يبدأ').length;
+            const closed = userProjs.filter(p => p.status === 'تم إغلاقه ونقله للمشاريع المغلقة' || p.status === 'مكتمل').length;
+
+            document.getElementById('stat_total').innerText = total;
+            document.getElementById('stat_running').innerText = running;
+            document.getElementById('stat_notstarted').innerText = notstarted;
+            document.getElementById('stat_closed').innerText = closed;
+        }
+
+        function generateShareableLink() {
+            try {
+                const jsonStr = JSON.stringify(db);
+                const encoded = btoa(unescape(encodeURIComponent(jsonStr)));
+                const shareUrl = window.location.origin + window.location.pathname + '?data=' + encoded;
+                navigator.clipboard.writeText(shareUrl).then(() => {
+                    alert('✅ تم نسخ رابط النظام المحدث بنجاح!');
+                }).catch(() => {
+                    prompt('نسخ رابط النظام لمشاركته:', shareUrl);
+                });
+            } catch(e) { alert('⚠️ البيانات كبيرة للمشاركة المباشرة عبر الرابط.'); }
+        }
+
+        function showNotification(msg) {
+            const bar = document.getElementById('notificationBar');
+            document.getElementById('notificationText').innerText = '🔔 إشعار: ' + msg;
+            bar.classList.remove('hidden');
+        }
+
+        function dismissNotification() {
+            document.getElementById('notificationBar').classList.add('hidden');
+        }
+
+        function getUserFullName(username) {
+            const u = db.users.find(x => x.username === username);
+            return u ? u.fullName : username;
+        }
+
+        function handleLogin() {
+            const u = document.getElementById('loginUser').value.trim();
+            const p = document.getElementById('loginPass').value;
+            const found = db.users.find(x => x.username === u && x.password === p);
+            if(found) {
+                currentUser = found;
+                document.getElementById('loginPage').classList.add('hidden');
+                document.getElementById('currentUserName').innerText = `${currentUser.fullName} (${currentUser.role === 'admin' ? 'مدير' : 'عضو'})`;
+                applyPermissions();
+                initApp();
+            } else {
+                document.getElementById('loginError').style.display = 'block';
+            }
+        }
+
+        function logout() {
+            currentUser = null;
+            document.getElementById('loginPage').classList.remove('hidden');
+        }
+
+        function applyPermissions() {
+            document.querySelectorAll('.admin-only').forEach(el => {
+                if(currentUser && currentUser.role === 'admin') el.classList.remove('hidden');
+                else el.classList.add('hidden');
+            });
+        }
+
+        function switchTab(tabId, el) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
+            document.getElementById(tabId).classList.remove('hidden');
+            document.querySelectorAll('.wp-menu-item').forEach(m => m.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        // --- 1. إدارة محضر وتقارير الاجتماع الأسبوعي ---
+        function addMeetingTaskRow() {
+            const tbody = document.getElementById('meetingTasksTbody');
+            const optionsHtml = db.users.map(u => `<option value="${u.username}">${u.fullName}</option>`).join('');
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td><select class="form-control m-task-user">${optionsHtml}</select></td>
+                <td>
+                    <select class="form-control m-task-day">
+                        <option value="السبت">السبت</option>
+                        <option value="الأحد">الأحد</option>
+                        <option value="الإثنين">الإثنين</option>
+                        <option value="الثلاثاء">الثلاثاء</option>
+                        <option value="الأربعاء">الأربعاء</option>
+                        <option value="الخميس">الخميس</option>
+                        <option value="الجمعة">الجمعة</option>
+                    </select>
+                </td>
+                <td><input type="date" class="form-control m-task-date"></td>
+                <td><input type="text" class="form-control m-task-desc" placeholder="المهمة المطلوبة بالتفصيل..."></td>
+                <td><button type="button" class="button-secondary" onclick="this.closest('tr').remove()" style="color:red;">حذف</button></td>
+            `;
+            tbody.appendChild(row);
+        }
+
+        function autoFetchPreviousAchievements() {
+            const fromDate = document.getElementById('m_prev_from').value;
+            const toDate = document.getElementById('m_prev_to').value;
+            const tbody = document.querySelector('#meetingAchievementsTable tbody');
+
+            if(!fromDate || !toDate) return;
+
+            const filteredTasks = db.tasks.filter(t => t.date >= fromDate && t.date <= toDate && t.achievements && t.achievements.trim() !== '');
+            if(filteredTasks.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: red;">لا توجد إنجازات موثقة مسجلة في جدول الأعمال خلال هذه الفترة الفاصلة.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = filteredTasks.map(t => `
+                <tr>
+                    <td><strong>${getUserFullName(t.assignee)}</strong></td>
+                    <td>${t.day} (${t.date})</td>
+                    <td>${t.desc}</td>
+                    <td><span class="badge badge-green">✓ ${t.achievements}</span></td>
+                </tr>
+            `).join('');
+        }
+
+        function saveMeeting(e) {
+            e.preventDefault();
+            const meetingTasks = [];
+            document.querySelectorAll('#meetingTasksTbody tr').forEach(row => {
+                const assignee = row.querySelector('.m-task-user').value;
+                const day = row.querySelector('.m-task-day').value;
+                const date = row.querySelector('.m-task-date').value;
+                const desc = row.querySelector('.m-task-desc').value.trim();
+
+                if(desc && date) {
+                    meetingTasks.push({ assignee, day, date, desc });
+                    const newTask = {
+                        id: 't_' + Date.now() + Math.random().toString(36).substr(2, 4),
+                        assignee, day, date, desc, achievements: '', reason: ''
+                    };
+                    db.tasks.push(newTask);
+                }
+            });
+
+            // تجميد إنجازات الجدول الحالية لتخزينها
+            const fromDate = document.getElementById('m_prev_from').value;
+            const toDate = document.getElementById('m_prev_to').value;
+            const achievementsData = db.tasks.filter(t => t.date >= fromDate && t.date <= toDate && t.achievements && t.achievements.trim() !== '').map(t => ({
+                assigneeFullName: getUserFullName(t.assignee),
+                dayDate: `${t.day} (${t.date})`,
+                desc: t.desc,
+                achievements: t.achievements
+            }));
+
+            const m = {
+                id: 'm_' + Date.now(),
+                day_name: document.getElementById('m_day_name').value,
+                meeting_date: document.getElementById('m_meeting_date').value,
+                prev_from: fromDate,
+                prev_to: toDate,
+                achievementsList: achievementsData,
+                planned_tasks: meetingTasks,
+                targets: document.getElementById('m_targets').value,
+                guidelines: document.getElementById('m_guidelines').value,
+                drive_link: document.getElementById('m_drive_link').value
+            };
+
+            db.meetings.push(m);
+            saveData();
+            renderMeetings();
+            renderTasks();
+            showNotification(`تم حفظ تقرير الاجتماع وترحيل (${meetingTasks.length}) مهمة بنجاح!`);
+        }
+
+        function renderMeetings() {
+            const tbody = document.querySelector('#meetingsTable tbody');
+            tbody.innerHTML = db.meetings.map((m, idx) => `
+                <tr>
+                    <td><strong>${m.day_name} (${m.meeting_date})</strong></td>
+                    <td>من ${m.prev_from} إلى ${m.prev_to}</td>
+                    <td>${m.drive_link ? `<a href="${m.drive_link}" target="_blank" class="drive-btn">📁 Drive</a>` : '-'}</td>
+                    <td>
+                        <button class="button-secondary" onclick="printMeeting(${idx})">🖨️ طباعة المحضر</button>
+                        <button class="button-danger admin-only" onclick="deleteMeeting(${idx})">🗑️ حذف</button>
+                    </td>
+                </tr>
+            `).join('');
+            applyPermissions();
+        }
+
+        function deleteMeeting(idx) {
+            if(confirm('هل أنت تأكد من حذف تقرير هذا الاجتماع؟')) {
+                db.meetings.splice(idx, 1);
+                saveData();
+                renderMeetings();
+            }
+        }
+
+        function printMeeting(idx) {
+            const m = db.meetings[idx];
+            const pWin = window.open('', '_blank');
+            pWin.document.write(`
+                <html dir="rtl">
+                <head>
+                    <title>تقرير اجتماع أسبوعي - مؤسسة آفاق ترست</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 30px; line-height: 1.6; color: #1d2327; }
+                        .header { text-align: center; border-bottom: 2px solid #005f60; padding-bottom: 10px; margin-bottom: 20px; }
+                        .header img { width: 100px; height: 100px; border-radius: 50%; }
+                        .bismillah { font-size: 16px; font-weight: bold; color: #005f60; margin-top: 8px; }
+                        .brand { color: #005f60; font-size: 22px; font-weight: bold; margin-top: 4px; }
+                        .date-box { background: #f4f6f8; border: 1px solid #dcdfe3; padding: 10px; margin-bottom: 15px; font-size: 13px; }
+                        h3 { color: #005f60; border-right: 4px solid #c29b38; padding-right: 8px; margin-top: 18px; font-size: 14px; }
+                        .content { background: #fff; border: 1px solid #eee; padding: 12px; font-size: 13px; white-space: pre-wrap; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+                        th, td { border: 1px solid #ccc; padding: 8px; font-size: 12px; text-align: right; }
+                        th { background: #005f60; color: #fff; }
+                        .footer { margin-top: 50px; display: flex; justify-content: space-between; font-weight: bold; font-size: 13px; }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <img src="${logoDataUrl}">
+                        <div class="bismillah">بسم الله الرحمن الرحيم</div>
+                        <div class="brand">مؤسسة آفاق ترست | AFAQ TRUST</div>
+                        <h2>محضر وتقرير الاجتماع الأسبوعي</h2>
+                    </div>
+                    <div class="date-box">
+                        <b>تاريخ الاجتماع:</b> ${m.day_name} (${m.meeting_date}) | 
+                        <b>فترة الإنجازات:</b> من ${m.prev_from} إلى ${m.prev_to}
+                    </div>
+                    
+                    <h3>أولاً: إنجازات الأسبوع السابق</h3>
+                    <table>
+                        <thead>
+                            <tr><th>الشخص المسؤول</th><th>اليوم والتاريخ</th><th>المهمة والتكليف</th><th>الإنجاز الميداني الموثق</th></tr>
+                        </thead>
+                        <tbody>
+                            ${m.achievementsList && m.achievementsList.length ? m.achievementsList.map(a => `<tr><td><b>${a.assigneeFullName}</b></td><td>${a.dayDate}</td><td>${a.desc}</td><td>${a.achievements}</td></tr>`).join('') : '<tr><td colspan="4">لا توجد إنجازات مدونة</td></tr>'}
+                        </tbody>
+                    </table>
+
+                    <h3>ثانياً: خطة ومهام الأسبوع القادم المعتمدة</h3>
+                    <table>
+                        <thead>
+                            <tr><th>الشخص المسؤول</th><th>اليوم</th><th>التاريخ</th><th>المهمة المطلوبة</th></tr>
+                        </thead>
+                        <tbody>
+                            ${m.planned_tasks ? m.planned_tasks.map(t => `<tr><td><b>${getUserFullName(t.assignee)}</b></td><td>${t.day}</td><td>${t.date}</td><td>${t.desc}</td></tr>`).join('') : '<tr><td colspan="4">لا توجد مهام مدونة</td></tr>'}
+                        </tbody>
+                    </table>
+
+                    ${m.targets ? `<h3>ثالثاً: المشاريع والأعمال المستهدفة</h3><div class="content">${m.targets}</div>` : ''}
+                    ${m.guidelines ? `<h3>رابعاً: التوجيهات والمتابعة</h3><div class="content">${m.guidelines}</div>` : ''}
+
+                    <div class="footer">
+                        <div>التوقيع والاعتماد (المدير التنفيذي): ...................</div>
+                        <div>أمين السر / المنسق: ...................</div>
+                    </div>
+                    <script>window.print();<\/script>
+                </body>
+                </html>
+            `);
+            pWin.document.close();
+        }
+
+        // --- 2. إدارة المشاريع وخصائص التنفيذ ---
+        function handleProjectTypeChange(val) {
+            renderProjectStepsInputs(val);
+        }
+
+        function renderProjectStepsInputs(type, existingStatus = {}) {
+            const box = document.getElementById('projectStepsBox');
+            const steps = projectStepsPresets[type] || ["التخطيط", "التكليف", "التنفيذ", "المتابعة", "Google Drive"];
+            box.innerHTML = steps.map((s, idx) => {
+                const status = existingStatus[s] || 'NONE';
+                return `
+                    <div class="checklist-item">
+                        <span><strong>${idx + 1}. ${s}</strong></span>
+                        <div class="radio-group">
+                            <label><input type="radio" name="step_status_${idx}" data-step="${s}" value="DONE" ${status === 'DONE' ? 'checked' : ''}> ✅ تم</label>
+                            <label><input type="radio" name="step_status_${idx}" data-step="${s}" value="NOT_DONE" ${status === 'NOT_DONE' ? 'checked' : ''}> ❌ لم يتم</label>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function saveOrUpdateProject(e) {
+            e.preventDefault();
+            const code = document.getElementById('p_code').value.trim();
+            const stepStatuses = {};
+            
+            document.querySelectorAll('#projectStepsBox .checklist-item').forEach(item => {
+                const radio = item.querySelector('input[type="radio"]:checked');
+                if(radio) {
+                    stepStatuses[radio.dataset.step] = radio.value;
+                }
+            });
+
+            const assignee = document.getElementById('p_assignee').value;
+            let p = db.projects.find(x => x.code === code);
+            
+            if(p) {
+                p.name = document.getElementById('p_name').value;
+                p.date = document.getElementById('p_date').value;
+                p.type = document.getElementById('p_type_select').value;
+                p.location = document.getElementById('p_location').value;
+                p.assignee = assignee;
+                p.assigneeFullName = getUserFullName(assignee);
+                p.status = document.getElementById('p_status').value;
+                p.driveLink = document.getElementById('p_drive_link').value;
+                p.text = document.getElementById('p_text').value;
+                p.stepStatuses = stepStatuses;
+            } else {
+                db.projects.push({
+                    code,
+                    name: document.getElementById('p_name').value,
+                    date: document.getElementById('p_date').value,
+                    type: document.getElementById('p_type_select').value,
+                    location: document.getElementById('p_location').value,
+                    assignee: assignee,
+                    assigneeFullName: getUserFullName(assignee),
+                    status: document.getElementById('p_status').value,
+                    driveLink: document.getElementById('p_drive_link').value,
+                    text: document.getElementById('p_text').value,
+                    stepStatuses: stepStatuses
+                });
+            }
+            saveData();
+            renderProjects();
+            showNotification(`تم حفظ وتحديث بيانات المشروع (${code}) بنجاح`);
+        }
+
+        function renderProjects() {
+            const activeTbody = document.querySelector('#projectsTable tbody');
+            const closedTbody = document.querySelector('#closedProjectsTable tbody');
+
+            // الموظف يرى مشاريعه المسندة إليه فقط، المدير يرى كافة المشاريع
+            let userProjects = db.projects;
+            if(currentUser && currentUser.role !== 'admin') {
+                userProjects = db.projects.filter(p => p.assignee === currentUser.username || p.assigneeFullName === currentUser.fullName);
+            }
+
+            const activeProjects = userProjects.filter(p => p.status !== 'تم إغلاقه ونقله للمشاريع المغلقة');
+            const closedProjects = userProjects.filter(p => p.status === 'تم إغلاقه ونقله للمشاريع المغلقة');
+
+            activeTbody.innerHTML = activeProjects.map(p => `
+                <tr>
+                    <td><code>${p.code}</code></td>
+                    <td><strong>${p.name}</strong><br><small style="color:var(--brand-gold);">${p.type}</small></td>
+                    <td><span class="badge ${p.status === 'مكتمل' ? 'badge-green' : 'badge-blue'}">${p.status}</span></td>
+                    <td>${p.location}<br><small>👤 ${p.assigneeFullName || getUserFullName(p.assignee)}</small></td>
+                    <td>${p.driveLink ? `<a href="${p.driveLink}" target="_blank" class="drive-btn">📁 Drive</a>` : '-'}</td>
+                    <td>
+                        <div style="max-height:100px; overflow-y:auto; font-size:11px;">
+                            ${p.stepStatuses ? Object.keys(p.stepStatuses).map(s => `<div>${s}: ${p.stepStatuses[s] === 'DONE' ? '<span class="badge badge-green">تم</span>' : '<span class="badge badge-red">لم يتم</span>'}</div>`).join('') : '-'}
+                        </div>
+                    </td>
+                    <td><div style="max-width:180px; white-space:pre-wrap;">${p.text}</div></td>
+                    <td class="admin-only">
+                        <select class="form-control" onchange="changeProjectStatus('${p.code}', this.value)">
+                            <option value="لم يبدأ" ${p.status === 'لم يبدأ' ? 'selected' : ''}>🟡 لم يبدأ</option>
+                            <option value="قيد التنفيذ" ${p.status === 'قيد التنفيذ' ? 'selected' : ''}>🔵 قيد التنفيذ</option>
+                            <option value="مكتمل" ${p.status === 'مكتمل' ? 'selected' : ''}>🟢 مكتمل</option>
+                            <option value="تم إغلاقه ونقله للمشاريع المغلقة">🔒 إغلاق ونقل للمغلقة</option>
+                        </select>
+                    </td>
+                    <td>
+                        <button class="button-secondary" onclick="printSingleProject('${p.code}')">🖨️ طباعة</button>
+                        <button class="button-danger admin-only" onclick="deleteProject('${p.code}')">🗑️ حذف</button>
+                    </td>
+                </tr>
+            `).join('');
+
+            closedTbody.innerHTML = closedProjects.map(p => `
+                <tr>
+                    <td><code>${p.code}</code></td>
+                    <td><strong>${p.name}</strong></td>
+                    <td>${p.location}</td>
+                    <td>👤 ${p.assigneeFullName || getUserFullName(p.assignee)}</td>
+                    <td>${p.driveLink ? `<a href="${p.driveLink}" target="_blank" class="drive-btn">📁 Drive</a>` : '-'}</td>
+                    <td>${p.text}</td>
+                    <td>
+                        <button class="button-secondary" onclick="printSingleProject('${p.code}')">🖨️ طباعة</button>
+                        <button class="button-danger admin-only" onclick="deleteProject('${p.code}')">🗑️ حذف</button>
+                    </td>
+                </tr>
+            `).join('');
+
+            applyPermissions();
+            updateDashboardStats();
+        }
+
+        function changeProjectStatus(code, newStatus) {
+            const p = db.projects.find(x => x.code === code);
+            if(p) { p.status = newStatus; saveData(); renderProjects(); }
+        }
+
+        function deleteProject(code) {
+            if(confirm('هل أنت تأكد من حذف هذا المشروع نهائياً؟')) {
+                db.projects = db.projects.filter(p => p.code !== code);
+                saveData();
+                renderProjects();
+            }
+        }
+
+        function printSingleProject(code) {
+            const p = db.projects.find(x => x.code === code);
+            const pWin = window.open('', '_blank');
+            pWin.document.write(`
+                <html dir="rtl">
+                <head>
+                    <title>تقرير مشروع - ${p.name}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 30px; line-height: 1.6; }
+                        .header { text-align: center; border-bottom: 2px solid #005f60; padding-bottom: 12px; margin-bottom: 20px; }
+                        .header img { width: 100px; height: 100px; border-radius: 50%; }
+                        .bismillah { font-size: 16px; font-weight: bold; color: #005f60; margin-top: 8px; }
+                        .brand { color: #005f60; font-size: 22px; font-weight: bold; }
+                        .table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+                        .table th, .table td { border: 1px solid #ccc; padding: 10px; font-size: 13px; text-align: right; }
+                        .table th { background: #005f60; color: #fff; width: 30%; }
+                        .footer { margin-top: 50px; display: flex; justify-content: space-between; font-weight: bold; }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <img src="${logoDataUrl}">
+                        <div class="bismillah">بسم الله الرحمن الرحيم</div>
+                        <div class="brand">مؤسسة آفاق ترست | AFAQ TRUST</div>
+                        <h2>تقرير مشروع ميداني</h2>
+                    </div>
+                    <table class="table">
+                        <tr><th>كود المشروع:</th><td><code>${p.code}</code></td></tr>
+                        <tr><th>اسم المشروع:</th><td><b>${p.name}</b></td></tr>
+                        <tr><th>النوع والموقع:</th><td>${p.type} - ${p.location}</td></tr>
+                        <tr><th>المسؤول الميداني:</th><td>${p.assigneeFullName || getUserFullName(p.assignee)}</td></tr>
+                        <tr><th>حالة المشروع:</th><td>${p.status}</td></tr>
+                        <tr><th>Google Drive:</th><td>${p.driveLink || 'غير مسجل'}</td></tr>
+                        <tr>
+                            <th>مراحل تنفيذ المشروع:</th>
+                            <td>
+                                ${p.stepStatuses ? Object.keys(p.stepStatuses).map(s => `<div>• ${s}: <b>${p.stepStatuses[s] === 'DONE' ? 'تم ✅' : 'لم يتم ❌'}</b></div>`).join('') : '-'}
+                            </td>
+                        </tr>
+                        <tr><th>التحديثات الميدانية:</th><td>${p.text}</td></tr>
+                    </table>
+                    <div class="footer">
+                        <div>توقيع المسؤول الميداني: ...................</div>
+                        <div>اعتماد المدير التنفيذي: ...................</div>
+                    </div>
+                    <script>window.print();<\/script>
+                </body>
+                </html>
+            `);
+            pWin.document.close();
+        }
+
+        // --- 3. جدول الأعمال والتقرير الميداني والتحديثات ---
+        function addTaskDirect(e) {
+            e.preventDefault();
+            const assignee = document.getElementById('t_assignee').value;
+            const desc = document.getElementById('t_desc').value;
+            const day = document.getElementById('t_day').value;
+            const date = document.getElementById('t_date').value;
+
+            db.tasks.push({
+                id: 't_' + Date.now(), assignee, day, date, desc, achievements: '', reason: ''
+            });
+
+            saveData();
+            renderTasks();
+            showNotification(`تم إسناد المهمة للموظف بنجاح`);
+        }
+
+        function renderTasks() {
+            const btnBox = document.getElementById('userFilterButtons');
+            if(btnBox) {
+                btnBox.innerHTML = `<button class="button-secondary user-tab-btn" onclick="filterTaskUser('ALL')">الجميع</button>` + 
+                    db.users.map(u => `<button class="button-secondary user-tab-btn" onclick="filterTaskUser('${u.username}')">👤 ${u.fullName}</button>`).join('');
+            }
+
+            // الموظف يرى جدول عمله الخالص، المدير يرى كافة الجداول
+            let filteredTasks = db.tasks;
+            if(currentUser && currentUser.role !== 'admin') {
+                filteredTasks = db.tasks.filter(t => t.assignee === currentUser.username);
+                document.getElementById('taskSectionTitle').innerText = `📊 جدول الأعمال الخاص بك: (${currentUser.fullName})`;
+            } else {
+                document.getElementById('taskSectionTitle').innerText = `📊 جدول الأعمال والمهام المخصصة (إدارة الفروع)`;
+                if(activeTaskUserFilter !== 'ALL') {
+                    filteredTasks = db.tasks.filter(t => t.assignee === activeTaskUserFilter);
+                }
+            }
+
+            const tbody = document.querySelector('#tasksTable tbody');
+            tbody.innerHTML = filteredTasks.map(t => `
+                <tr>
+                    <td>👤 <strong>${getUserFullName(t.assignee)}</strong></td>
+                    <td>${t.day}<br><small>${t.date}</small></td>
+                    <td>${t.desc}</td>
+                    <td>
+                        <textarea class="form-control" rows="2" onchange="updateTaskAchievement('${t.id}', this.value)" placeholder="سجل الإنجاز والمتابعة الميدانية...">${t.achievements || ''}</textarea>
+                    </td>
+                    <td>
+                        <input type="text" class="form-control" value="${t.reason || ''}" onchange="updateTaskReason('${t.id}', this.value)" placeholder="سبب عدم التنفيذ إن وجد...">
+                    </td>
+                    <td class="admin-only">
+                        <button class="button-danger" onclick="deleteTask('${t.id}')">حذف</button>
+                    </td>
+                </tr>
+            `).join('');
+
+            applyPermissions();
+        }
+
+        function filterTaskUser(username) {
+            activeTaskUserFilter = username;
+            renderTasks();
+        }
+
+        function updateTaskAchievement(id, val) {
+            const t = db.tasks.find(x => x.id === id);
+            if(t) { t.achievements = val; saveData(); }
+        }
+
+        function updateTaskReason(id, val) {
+            const t = db.tasks.find(x => x.id === id);
+            if(t) { t.reason = val; saveData(); }
+        }
+
+        function submitTasksToAdmin() {
+            saveData();
+            alert('✅ تم رفع إنجازاتك وتحديثات جدول الأعمال للمدير بنجاح!');
+        }
+
+        function deleteTask(id) {
+            db.tasks = db.tasks.filter(t => t.id !== id);
+            saveData();
+            renderTasks();
+        }
+
+        function printUserTasks() {
+            let targetUser = currentUser.role === 'admin' ? activeTaskUserFilter : currentUser.username;
+            let tasksToPrint = targetUser === 'ALL' ? db.tasks : db.tasks.filter(t => t.assignee === targetUser);
+            let displayTitle = targetUser === 'ALL' ? 'الجميع' : getUserFullName(targetUser);
+
+            const pWin = window.open('', '_blank');
+            pWin.document.write(`
+                <html dir="rtl">
+                <head>
+                    <title>جدول الأعمال - ${displayTitle}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 25px; line-height: 1.5; }
+                        .header { text-align: center; border-bottom: 2px solid #005f60; padding-bottom: 10px; margin-bottom: 20px; }
+                        .header img { width: 95px; height: 95px; border-radius: 50%; }
+                        .bismillah { font-size: 16px; font-weight: bold; color: #005f60; margin-top: 8px; }
+                        .brand { color: #005f60; font-size: 20px; font-weight: bold; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+                        th, td { border: 1px solid #ccc; padding: 8px; font-size: 12px; text-align: right; }
+                        th { background: #005f60; color: #fff; }
+                        .footer { margin-top: 40px; display: flex; justify-content: space-between; font-weight: bold; font-size: 12px; }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <img src="${logoDataUrl}">
+                        <div class="bismillah">بسم الله الرحمن الرحيم</div>
+                        <div class="brand">مؤسسة آفاق ترست | AFAQ TRUST</div>
+                        <h3>جدول الأعمال والمهام اليومية - (${displayTitle})</h3>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr><th>المسؤول</th><th>التاريخ</th><th>المهمة المطلوب إنجازها</th><th>الإنجازات الميدانية</th><th>سبب عدم التنفيذ</th></tr>
+                        </thead>
+                        <tbody>
+                            ${tasksToPrint.map(t => `<tr><td><b>${getUserFullName(t.assignee)}</b></td><td>${t.day} (${t.date})</td><td>${t.desc}</td><td>${t.achievements || 'قيد التنفيذ'}</td><td>${t.reason || '-'}</td></tr>`).join('')}
+                        </tbody>
+                    </table>
+                    <div class="footer">
+                        <div>توقيع الموظف المسؤول: ...................</div>
+                        <div>اعتماد المدير التنفيذي: ...................</div>
+                    </div>
+                    <script>window.print();<\/script>
+                </body>
+                </html>
+            `);
+            pWin.document.close();
+        }
+
+        // --- 4. إدارة التجهيزات ---
+        function addEquipment(e) {
+            e.preventDefault();
+            const assignee = document.getElementById('eq_assignee').value;
+            db.equipment.push({
+                id: 'eq_' + Date.now(),
+                project: document.getElementById('eq_project').value,
+                item: document.getElementById('eq_item').value,
+                qty: document.getElementById('eq_qty').value,
+                assignee: assignee,
+                assigneeFullName: getUserFullName(assignee),
+                status: 'قيد التجهيز'
+            });
+            saveData();
+            renderEquipment();
+        }
+
+        function renderEquipment() {
+            const tbody = document.querySelector('#equipmentTable tbody');
+            tbody.innerHTML = db.equipment.map((eq, idx) => `
+                <tr>
+                    <td><strong>${eq.project}</strong></td>
+                    <td>${eq.item}</td>
+                    <td>${eq.qty}</td>
+                    <td>👤 ${eq.assigneeFullName || getUserFullName(eq.assignee)}</td>
+                    <td>
+                        <select onchange="updateEqStatus(${idx}, this.value)" class="form-control">
+                            <option value="قيد التجهيز" ${eq.status === 'قيد التجهيز' ? 'selected' : ''}>⏳ قيد التجهيز</option>
+                            <option value="تم التجهيز" ${eq.status === 'تم التجهيز' ? 'selected' : ''}>✅ تم التجهيز</option>
+                            <option value="تم التسليم بالموقع" ${eq.status === 'تم التسليم بالموقع' ? 'selected' : ''}>🚚 تم التسليم بالموقع</option>
+                        </select>
+                    </td>
+                    <td class="admin-only"><button class="button-danger" onclick="deleteEquipment(${idx})">حذف</button></td>
+                </tr>
+            `).join('');
+            applyPermissions();
+        }
+
+        function updateEqStatus(idx, val) { db.equipment[idx].status = val; saveData(); }
+        function deleteEquipment(idx) { db.equipment.splice(idx, 1); saveData(); renderEquipment(); }
+
+        // --- 5. الحسابات وتغيير كلمات السر ---
+        function changeMyPassword(e) {
+            e.preventDefault();
+            const curr = document.getElementById('pass_current').value;
+            const newP = document.getElementById('pass_new').value;
+            const conf = document.getElementById('pass_confirm').value;
+
+            if(curr !== currentUser.password) return alert('❌ كلمة المرور الحالية غير صحيحة!');
+            if(newP !== conf) return alert('❌ كلمة المرور الجديدة وتأكيدها غير متطابقين!');
+
+            currentUser.password = newP;
+            const userInDb = db.users.find(u => u.username === currentUser.username);
+            if(userInDb) userInDb.password = newP;
+
+            saveData();
+            alert('✅ تم تغيير كلمة المرور بنجاح!');
+            document.getElementById('pass_current').value = '';
+            document.getElementById('pass_new').value = '';
+            document.getElementById('pass_confirm').value = '';
+        }
+
+        function addUser(e) {
+            e.preventDefault();
+            const fullName = document.getElementById('u_fullName').value.trim();
+            const username = document.getElementById('u_username').value.trim();
+            const password = document.getElementById('u_password').value;
+            const role = document.getElementById('u_role').value;
+
+            if(db.users.find(u => u.username === username)) return alert('اسم المستخدم موجود بالفعل!');
+
+            db.users.push({username, password, role, fullName});
+            saveData();
+            initApp();
+            alert('تم إنشاء الحساب بنجاح!');
+        }
+
+        function renderUsers() {
+            const tbody = document.querySelector('#usersTable tbody');
+            tbody.innerHTML = db.users.map((u, idx) => `
+                <tr>
+                    <td><strong>${u.fullName || u.username}</strong></td>
+                    <td><code>${u.username}</code></td>
+                    <td>${u.role === 'admin' ? 'مدير نظام (Admin)' : 'مستخدم ميداني'}</td>
+                    <td><span class="badge badge-green">نشط</span></td>
+                    <td>${u.username === 'admin' ? '-' : `<button class="button-danger" onclick="deleteUser(${idx})">حذف الحساب</button>`}</td>
+                </tr>
+            `).join('');
+        }
+
+        function deleteUser(idx) {
+            if(confirm('هل أنت متأكد من حذف هذا الحساب؟')) {
+                db.users.splice(idx, 1);
+                saveData();
+                initApp();
+            }
+        }
+
+        function updateDropdowns() {
+            ['p_assignee', 'eq_assignee', 't_assignee'].forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.innerHTML = db.users.map(u => `<option value="${u.username}">${u.fullName}</option>`).join('');
+            });
+            const eqProj = document.getElementById('eq_project');
+            if(eqProj) {
+                eqProj.innerHTML = db.projects.length ? db.projects.map(p => `<option value="${p.name} (${p.code})">${p.name} (${p.code})</option>`).join('') : '<option value="عام">مشروع عام</option>';
+            }
+        }
+
+        function initApp() {
+            document.getElementById('loginLogo').src = logoDataUrl;
+            document.getElementById('sidebarLogo').src = logoDataUrl;
+            updateDropdowns();
+            renderProjects();
+            renderEquipment();
+            renderTasks();
+            renderMeetings();
+            renderUsers();
+            handleProjectTypeChange('مشاريع الدعوة والتعليم');
+            if(document.getElementById('meetingTasksTbody').children.length === 0) {
+                addMeetingTaskRow();
+            }
+        }
+    </script>
+</body>
+</html>
